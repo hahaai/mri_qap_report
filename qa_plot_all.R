@@ -1,12 +1,12 @@
-setwd('/Users/lei.ai/projects/MRI_QAP_report')
+setwd('/Users/lei.ai/Documents/projects/MRI_QAP_report')
 source("qa_plot_functions.R")
 library(gridExtra)
 
 # some settings
 average_san_type = TRUE
-rm_outlier= FALSE
-release_num='R4'
-  
+rm_outlier= TRUE
+release_num='All'
+
 # load Subject list for individusl release
 #sublist_RU_R1	<- read.csv("Sublist_RU_R1.txt",header = FALSE,col.names = 'Participant') # anatomical
 sublist_RU_R2	<- read.csv("Sublist_RU_R2.txt",header = FALSE,col.names = 'Participant') # anatomical
@@ -50,7 +50,7 @@ df1=subset(df1, Participant %in% sublist$Participant)
 df1=df1[! df1$Series=='anat_t1',]
 df1=df1[! df1$Series=='anat_t2',]
 
-df1$site[df1$Series=='T1w_HCP']='RU-HCP'
+df1$site[df1$Series=='T1w_HCP']='HCP_RU'
 
 df_Rutgers=data.frame(df1$CNR)
 colnames(df_Rutgers)='anat_cnr'
@@ -60,7 +60,7 @@ df_Rutgers$anat_fwhm=df1$FWHM
 df_Rutgers$anat_qi1=df1$Qi1
 df_Rutgers$anat_snr=df1$SNR
 df_Rutgers$site=df1$site
-#df_Rutgers <- subset(df_Rutgers,site == 'RU-HCP')
+#df_Rutgers <- subset(df_Rutgers,site == 'HCP_RU')
 df_Rutgers$site     <- factor(sub("_", " ", as.character(df_Rutgers$site)))
 
 # read CBIC data
@@ -82,9 +82,9 @@ df1=subset(df1, Participant %in% sublist$Participant)
 df1$site=as.character(df1$Site)
 # delete anat_t1
 df1=df1[! df1$Series=='anat_t1',]
-df1$site[grepl('T1w_HCP',df1$Series)]='CBIC-HCP'
-df1$site[grepl('T1w_VNav',df1$Series)]='CBIC-VNav'
-df1$site[grepl('T1w_VNavNorm',df1$Series)]='CBIC-VNavNorm'
+df1$site[grepl('T1w_HCP',df1$Series)]='HCP_CBIC'
+df1$site[grepl('T1w_VNav',df1$Series)]='VNav_CBIC'
+df1$site[grepl('T1w_VNavNorm',df1$Series)]='VNavNorm_CBIC'
 
 
 #df <- subset(df,site =='Rutgers'| site == 'HBN-SS'| site =='CoRR')
@@ -106,24 +106,24 @@ df = rbind(df_Rutgers,df_CBIC)
 qa.measures <- colnames(df)[grep("^anat_", colnames(df))]
 
 qa.descs    <- list(
-    anat_cnr  = "CNR", 
-    anat_efc  = "EFC", 
-    anat_fber = "FBER", 
-    anat_fwhm = "FWHM", 
-    anat_qi1  = "QI1",
-    anat_snr = "SNR",
-    func_efc  = "Entropy Focus Criterion", 
-    func_fber = "FBER", 
-    func_fwhm = "Smoothness of Voxels", 
-    func_gsr  = "Ghost-to-Signal Ratio", 
-    func_dvars    = "Standardized DVARS", 
-    func_outlier  = "Fraction of Outlier Voxels", 
-    func_quality  = "Mean Distance to Median Volume", 
-    func_mean_fd  = "Mean FD",
-    func_gcor = "Global Correlation",
-    Quality_Mean = "Quality",
-    Fraction_of_Outliers = "Outliers Detection",
-    FWHM = "FWHM"
+  anat_cnr  = "CNR", 
+  anat_efc  = "EFC", 
+  anat_fber = "FBER", 
+  anat_fwhm = "FWHM", 
+  anat_qi1  = "QI1",
+  anat_snr = "SNR",
+  func_efc  = "Entropy Focus Criterion", 
+  func_fber = "FBER", 
+  func_fwhm = "Smoothness of Voxels", 
+  func_gsr  = "Ghost-to-Signal Ratio", 
+  func_dvars    = "Standardized DVARS", 
+  func_outlier  = "Fraction of Outlier Voxels", 
+  func_quality  = "Mean Distance to Median Volume", 
+  func_mean_fd  = "Mean FD",
+  func_gcor = "Global Correlation",
+  Quality_Mean = "Quality",
+  Fraction_of_Outliers = "Outliers Detection",
+  FWHM = "FWHM"
 )
 
 
@@ -132,23 +132,23 @@ qa.descs    <- list(
 #' greater than 3 times the IQR relative to the 25% or 75% mark.
 #+ anat-plot, fig.width=8, fig.height=5, dpi=100
 #for (measure in qa.measures)
-	i=1
-	p = list()
+i=1
+p = list()
 for (measure in qa.measures) {
-    desc <- qa.descs[[measure]]
-    p[[i]]=plot_measure(df, measure, desc, site.col="site", plot=FALSE, 
-                             outfile=NULL, rm.outlier=rm_outlier)
-							 i=i+1
+  desc <- qa.descs[[measure]]
+  p[[i]]=plot_measure(df, measure, desc, site.col="site", plot=FALSE, 
+                      outfile=NULL, rm.outlier=rm_outlier)
+  i=i+1
 }
 
 
-	
-	
-	
-	
-	############################# functional data
-	
-	
+
+
+
+
+############################# functional data
+
+
 #' ## Read in Data
 #' Along with reading the data, we setup descriptions that will be associated
 #' with each column and used as the label for the y-axis.
@@ -204,14 +204,14 @@ df_Rutgers$Participant=df1$Participant.x
 
 # manage site information (put site and scantype together). They are soem subejct has 10 minute resting.
 
-df_Rutgers$site[which(df_Rutgers$Scan_type=='func_resting')]="RU_rest"
-df_Rutgers$site[grepl('func_resting_run_1',df_Rutgers$Scan_type)]="RU_rest1"
-df_Rutgers$site[grepl('func_resting_run_2',df_Rutgers$Scan_type)]="RU_rest2"
-df_Rutgers$site[grepl('func_movieDM',df_Rutgers$Scan_type)]="RU_DM"
-df_Rutgers$site[grepl('func_movieTP',df_Rutgers$Scan_type)]="RU_TP"
-df_Rutgers$site[grepl('func_peer_run_1',df_Rutgers$Scan_type)]="RU_peer1"
-df_Rutgers$site[grepl('func_peer_run_2',df_Rutgers$Scan_type)]="RU_peer2"
-df_Rutgers$site[grepl('func_peer_run_3',df_Rutgers$Scan_type)]="RU_peer3"
+df_Rutgers$site[which(df_Rutgers$Scan_type=='func_resting')]="rest_RU"
+df_Rutgers$site[grepl('func_resting_run_1',df_Rutgers$Scan_type)]="rest_RU1"
+df_Rutgers$site[grepl('func_resting_run_2',df_Rutgers$Scan_type)]="rest_RU2"
+df_Rutgers$site[grepl('func_movieDM',df_Rutgers$Scan_type)]="DM_RU"
+df_Rutgers$site[grepl('func_movieTP',df_Rutgers$Scan_type)]="TP_RU"
+df_Rutgers$site[grepl('func_peer_run_1',df_Rutgers$Scan_type)]="peer_RU1"
+df_Rutgers$site[grepl('func_peer_run_2',df_Rutgers$Scan_type)]="peer_RU2"
+df_Rutgers$site[grepl('func_peer_run_3',df_Rutgers$Scan_type)]="peer_RU3"
 df_Rutgers=df_Rutgers[complete.cases(df_Rutgers),]
 
 
@@ -221,7 +221,7 @@ if (average_san_type){
     #print(sub)
     # here the index 1:9 is hard coded.
     xx=as.data.frame(t(colMeans(df_Rutgers[which(as.character(df_Rutgers$Participant)==sub & grepl('rest',df_Rutgers$Scan_type)),1:9])))
-    xx$site='RU_rest'
+    xx$site='rest_RU'
     if (exists('df_Rutgers_tmp')){
       df_Rutgers_tmp=rbind(df_Rutgers_tmp,xx)
     }else{
@@ -229,7 +229,7 @@ if (average_san_type){
     }
     
     xx=as.data.frame(t(colMeans(df_Rutgers[which(as.character(df_Rutgers$Participant)==sub & grepl('peer',df_Rutgers$Scan_type)),1:9])))
-    xx$site='RU_peer'
+    xx$site='peer_RU'
     if (exists('df_Rutgers_tmp')){
       df_Rutgers_tmp=rbind(df_Rutgers_tmp,xx)
     }else{
@@ -237,7 +237,7 @@ if (average_san_type){
     }
     
     xx=as.data.frame(t(colMeans(df_Rutgers[which(as.character(df_Rutgers$Participant)==sub & grepl('movieDM',df_Rutgers$Scan_type)),1:9])))
-    xx$site='RU_DM'
+    xx$site='DM_RU'
     if (exists('df_Rutgers_tmp')){
       df_Rutgers_tmp=rbind(df_Rutgers_tmp,xx)
     }else{
@@ -245,14 +245,14 @@ if (average_san_type){
     }
     
     xx=as.data.frame(t(colMeans(df_Rutgers[which(as.character(df_Rutgers$Participant)==sub & grepl('movieTP',df_Rutgers$Scan_type)),1:9])))
-    xx$site='RU_TP'
+    xx$site='TP_RU'
     if (exists('df_Rutgers_tmp')){
       df_Rutgers_tmp=rbind(df_Rutgers_tmp,xx)
     }else{
       df_Rutgers_tmp=xx
     }
     
-
+    
     
   }
   df_Rutgers_tmp=df_Rutgers_tmp[complete.cases(df_Rutgers_tmp),]
@@ -324,14 +324,14 @@ df_CBIC$Scan_type = as.character(df1$Scanning_type)
 df_CBIC$Participant=df1$Participant.x
 # manage site information (put site and scantype together). They are soem subejct has 10 minute resting.
 
-df_CBIC$site[which(df_CBIC$Scan_type=='func_rest')]="CBIC_rest"
-df_CBIC$site[grepl('func_rest_run_1',df_CBIC$Scan_type)]="CBIC_rest1"
-df_CBIC$site[grepl('func_rest_run_2',df_CBIC$Scan_type)]="CBIC_rest2"
-df_CBIC$site[grepl('func_movieDM',df_CBIC$Scan_type)]="CBIC_DM"
-df_CBIC$site[grepl('func_movieTP',df_CBIC$Scan_type)]="CBIC_TP"
-df_CBIC$site[grepl('func_peer_run_1',df_CBIC$Scan_type)]="CBIC_peer1"
-df_CBIC$site[grepl('func_peer_run_2',df_CBIC$Scan_type)]="CBIC_peer2"
-df_CBIC$site[grepl('func_peer_run_3',df_CBIC$Scan_type)]="CBIC_peer3"
+df_CBIC$site[which(df_CBIC$Scan_type=='func_rest')]="rest_CBIC"
+df_CBIC$site[grepl('func_rest_run_1',df_CBIC$Scan_type)]="rest_CBIC1"
+df_CBIC$site[grepl('func_rest_run_2',df_CBIC$Scan_type)]="rest_CBIC2"
+df_CBIC$site[grepl('func_movieDM',df_CBIC$Scan_type)]="DM_CBIC"
+df_CBIC$site[grepl('func_movieTP',df_CBIC$Scan_type)]="TP_CBIC"
+df_CBIC$site[grepl('func_peer_run_1',df_CBIC$Scan_type)]="peer_CBIC1"
+df_CBIC$site[grepl('func_peer_run_2',df_CBIC$Scan_type)]="peer_CBIC2"
+df_CBIC$site[grepl('func_peer_run_3',df_CBIC$Scan_type)]="peer_CBIC3"
 
 
 if (average_san_type){
@@ -340,7 +340,7 @@ if (average_san_type){
     #print(sub)
     # here the index 1:9 is hard coded.
     xx=as.data.frame(t(colMeans(df_CBIC[which(as.character(df_CBIC$Participant)==sub & grepl('rest',df_CBIC$Scan_type)),1:9])))
-    xx$site='CBIC_rest'
+    xx$site='rest_CBIC'
     if (exists('df_CBIC_tmp')){
       df_CBIC_tmp=rbind(df_CBIC_tmp,xx)
     }else{
@@ -348,7 +348,7 @@ if (average_san_type){
     }
     
     xx=as.data.frame(t(colMeans(df_CBIC[which(as.character(df_CBIC$Participant)==sub & grepl('peer',df_CBIC$Scan_type)),1:9])))
-    xx$site='CBIC_peer'
+    xx$site='peer_CBIC'
     if (exists('df_CBIC_tmp')){
       df_CBIC_tmp=rbind(df_CBIC_tmp,xx)
     }else{
@@ -356,7 +356,7 @@ if (average_san_type){
     }
     
     xx=as.data.frame(t(colMeans(df_CBIC[which(as.character(df_CBIC$Participant)==sub & grepl('movieDM',df_CBIC$Scan_type)),1:9])))
-    xx$site='CBIC_DM'
+    xx$site='DM_CBIC'
     if (exists('df_CBIC_tmp')){
       df_CBIC_tmp=rbind(df_CBIC_tmp,xx)
     }else{
@@ -364,7 +364,7 @@ if (average_san_type){
     }
     
     xx=as.data.frame(t(colMeans(df_CBIC[which(as.character(df_CBIC$Participant)==sub & grepl('movieTP',df_CBIC$Scan_type)),1:9])))
-    xx$site='CBIC_TP'
+    xx$site='TP_CBIC'
     if (exists('df_CBIC_tmp')){
       df_CBIC_tmp=rbind(df_CBIC_tmp,xx)
     }else{
@@ -390,9 +390,9 @@ df_CBIC$site     <- factor(sub("_", " ", as.character(df_CBIC$site)))
 
 df = rbind(df_Rutgers,df_CBIC)
 # plot orders
-levels(df$site) = c("SI Rest","RU Rest","RU DM","RU TP")
+levels(df$site) = c("DM RU", "DM CBIC", "TP RU" ,"TP CBIC", "rest RU","rest CBIC","peer RU","peer CBIC")
 # not plot mean_fd > 2
-df$func_mean_fd[df$func_mean_fd>2]=NA
+#df$func_mean_fd[df$func_mean_fd>2]=NA
 
 
 qa.measures <- c(
@@ -409,10 +409,10 @@ qa.measures <- c(
 
 
 for (measure in qa.measures) {
-    desc <- qa.descs[[measure]]
-    p[[i]]=plot_measure(df, measure, desc, site.col="site", plot=FALSE, 
-                             outfile=NULL, rm.outlier=rm_outlier)
-							 i=i+1
+  desc <- qa.descs[[measure]]
+  p[[i]]=plot_measure(df, measure, desc, site.col="site", plot=FALSE, 
+                      outfile=NULL, rm.outlier=rm_outlier)
+  i=i+1
 }
 
 
