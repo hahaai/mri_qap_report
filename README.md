@@ -5,6 +5,7 @@ QAP Measures:
 
 Spatial Anatomical
 Signal-to-Noise Ratio (SNR) [snr]: The mean intensity within gray matter divided by the standard deviation of the values outside the brain. Higher values are better 1.
+
 Contrast to Noise Ratio (CNR) [cnr]: The mean of the gray matter intensity values minus the mean of the white matter intensity values divided by the standard deviation of the values outside the brain. Higher values are better 1.
 Foreground to Background Energy Ratio [fber]: The variance of voxels inside the brain divided by the variance of voxels outside the brain. Higher values are better.
 Percent Artifact Voxels (Qi1) [qi1]: The proportion of voxels outside the brain with artifacts to the total number of voxels outside the brain. Lower values are better 2.
